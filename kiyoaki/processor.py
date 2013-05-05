@@ -14,6 +14,7 @@ class BaseProcessor:
         self.sub_items = []
         self.add_notification_command = add_notification
         self.processor_block_type = self.CONTAINER
+        self.return_mode = True
 
     def get_type(self):
         return self.processor_block_type
@@ -23,6 +24,9 @@ class BaseProcessor:
 
     def get_value_to_return(self):
         return None
+
+    def is_return_mode(self):
+        return self.return_mode
 
     def append(self, module):
         if module is not None:
@@ -52,12 +56,13 @@ class ProcessModule(BaseProcessor):
         self.title = title
 
     def process(self, input_string):
-        result = []
         for sub_item in self.sub_items:
             sub_item.process(input_string)
-            if sub_item.is_ready_to_return():
-                return sub_item.get_value_to_return()
-            input_string = new_val
+            if sub_item.is_ready_to_return() and sub_item.get_value_to_return():
+                if sub_item.is_return_mode():
+                    return sub_item.get_value_to_return()
+                else:
+                    input_string = sub_item.get_value_to_return()
         return input_string
 
 class ProcessBranchBlock(BaseProcessor):
@@ -73,9 +78,12 @@ class ProcessBranchBlock(BaseProcessor):
             if sub_item.get_type() in (self.BRANCH, self.BRANCH_CONTAINER) and sub_item.test(input_string):
                 sub_item.process(input_string)
                 if sub_item.is_ready_to_return():
-                    self.value_to_return = sub_item.get_value_to_return()
                     self.ready_to_return = True
-                    break
+                    self.value_to_return = sub_item.get_value_to_return()
+                    if sub_item.is_return_mode():
+                        break
+                    else:
+                        input_string = sub_item.get_value_to_return()
 
     def is_ready_to_return(self):
         return self.ready_to_return
@@ -91,14 +99,15 @@ class ProcessBranch(ProcessBranchBlock):
         ProcessBranchBlock.__init__(self, add_notification)
         self.processor_block_type = self.BRANCH
         self.rule_validator = rule_validator
-    
+
     def test(self, input_string):
         return self.rule_validator is None or self.rule_validator.test(input_string)
 
 class TextProcessor(ProcessBranch):
-    def __init__(self, rule_validator, replacement, add_notification = None):
+    def __init__(self, rule_validator, replacement, return_mode = True, add_notification = None):
         ProcessBranch.__init__(self, rule_validator, add_notification)
         self.replacement = replacement
+        self.return_mode = return_mode
 
     def process(self, input_string):
         if self.rule_validator is None:

@@ -6,15 +6,20 @@ from processor import *
 import re
 
 validator = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"(.*)ь()")])
+validatorL = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"()Л(.*)")])
 validator_branch1 = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"()Л(.*)")])
 validator_branch2 = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"()Н(.*)")])
 processor = TextProcessor(validator, "ин")
+processorN = TextProcessor(validatorL, "L", False)
+processorL = TextProcessor(validator, "ин", False)
 branch1 = ProcessBranch(validator_branch1)
 branch1.append(processor)
 branch2 = ProcessBranch(validator_branch2)
 branch2.append(processor)
-branch_block = ProcessBranchBlock("postfix_name")
+branch_block = ProcessBranchBlock()
 branch_block.append(branch1).append(branch2)
+process_module_line = ProcessModule("postfix_name_linear")
+process_module_line.append(processorN).append(processorL)
 process_module = ProcessModule("postfix_name")
 process_module.append(branch_block)
 processor_modules_pool = ProcessorModulesPool()
@@ -32,6 +37,9 @@ class ProcessBranchBlockTest(unittest.TestCase):
         branch_block.process("Нень")
         self.assertTrue(branch_block.is_ready_to_return())
         self.assertEqual(branch_block.get_value_to_return(), "Ненин")
+    
+    def testLineProcessing(self):
+        self.assertEqual(process_module_line.process("Лень"), "Lенин")
 
 class TextProcessor(unittest.TestCase):
     def testProcessing(self):
