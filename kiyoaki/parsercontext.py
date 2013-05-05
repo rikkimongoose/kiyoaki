@@ -6,7 +6,7 @@ class ParserContext:
     """ A context for parser to be executed
     """
 
-    RegExComment = re.compile("\s*#.*")
+    RegExComment = re.compile("\s*(#.*)?")
     ScopeSymbols = [("[", "]")]
 
     def __init__(self):
