@@ -2,143 +2,81 @@
 # -*- coding: utf-8 -*- 
 
 import re
+from random import choice
 
-class BaseProcessor:
-    LOGIC = 1
-    PROCESSOR = 2
-    BRANCH = 4
-    LOOP = 8
-    CONTAINER = 16
-    BRANCH_CONTAINER = BRANCH + CONTAINER
-    def __init__(self, add_notification=None):
+class KBaseBlack:
+    def __init__(self):
         self.sub_items = []
-        self.add_notification_command = add_notification
-        self.processor_block_type = self.CONTAINER
-        self.return_mode = True
-
-    def get_type(self):
-        return self.processor_block_type
-
-    def is_ready_to_return(self):
-        return False
-
-    def get_value_to_return(self):
-        return None
-
-    def is_return_mode(self):
-        return self.return_mode
 
     def append(self, module):
         if module is not None:
             self.sub_items.append(module)
         return self
 
-    def add_notification(self, title, message):
-        if add_notification_command is not None:
-            add_notification_command(title, message)
+    def get_title(self):
+        return None
 
-class ProcessorModulesPool(BaseProcessor):
-    def __init__(self, add_notification = None):
-        BaseProcessor.__init__(self, add_notification)
+class KCodeBlock(KBaseBlock):
+    def __init__(self, rule = None, return_mode = True, random_key = 0):
+        KBaseBlock.__init__(self)
+        self.rule = rule
+        self.return_mode = return_mode
+        self.random_key = random_key
+
+    def can_be_used_for(self, input_string):
+        return self.rule is None or self.rule.test(unput_string)
+
+    def is_return_mode(self, return_mode):
+        return self.return_mode
+
+    def get_random_key(self, key):
+        return self.random_key
+
+    def is_random_select(self, key):
+        return self.random_key is not None and self.random_key > 0
+
+    def process(self, input_string):
+        blocks_to_exec = []
+        for sub_item in sub_items:
+            if sub_item.can_be_used_for(input_string):
+                if sub_item.is_random_select():
+                    blocks_to_exec.append(sub_item)
+                    continue
+                input_string = sub_item.process(input_string)
+                if sub_item.is_return_mode():
+                    return input_string
+
+        if len(blocks_to_exec):
+            sub_item = choice(blocks_to_exec)
+            input_string = sub_item.process(input_string)
+
+        return input_string
+
+class KMethod(KCodeBlock):
+    def __init__(self, title):
+        KCodeBlock.__init__(self)
+        self.title=title
+
+    def get_title(self):
+        return self.title
+
+class KCommand(KCodeBlock):
+    def __init__(self, rule = None, return_mode = True, random_key = 0):
+        KCodeBlock.__init__(self, rule, return_mode, random_key)
+
+    def process(self, input_string):
+        if self.rule is None:
+            return input_string
+
+        return self.rule.apply(input_string)
+
+class KProcessorModulesPool(KBaseBlock):
+    def __init__(self):
+        KBaseBlock.__init__(self)
 
     def process(self, input_string, module_name):
         module_to_exec = None
         for module in self.sub_items:
-            if hasattr(module, "title") and module.title == module_name:
-                module_to_exec = module
-                break
-        if module_to_exec is not None:
-            return module_to_exec.process(input_string)
-
-class ProcessModule(BaseProcessor):
-    def __init__(self, title, add_notification = None):
-        BaseProcessor.__init__(self, add_notification)
-        self.title = title
-
-    def process(self, input_string):
-        for sub_item in self.sub_items:
-            sub_item.process(input_string)
-            if sub_item.is_ready_to_return() and sub_item.get_value_to_return():
-                if sub_item.is_return_mode():
-                    return sub_item.get_value_to_return()
-                else:
-                    input_string = sub_item.get_value_to_return()
+            if module.get_title() == module_name:
+                return module_to_exec.process(input_string)
         return input_string
-
-class ProcessBranchBlock(BaseProcessor):
-    def __init__(self, add_notification = None):
-        BaseProcessor.__init__(self, add_notification)
-        self.ready_to_return = False
-        self.value_to_return = None
-        self.processor_block_type = self.BRANCH_CONTAINER
-        self.finished = True
-
-    def process(self, input_string):
-        for sub_item in self.sub_items:
-            if sub_item.get_type() in (self.BRANCH, self.BRANCH_CONTAINER) and sub_item.test(input_string):
-                sub_item.process(input_string)
-                if sub_item.is_ready_to_return():
-                    self.ready_to_return = True
-                    self.value_to_return = sub_item.get_value_to_return()
-                    if sub_item.is_return_mode():
-                        break
-                    else:
-                        input_string = sub_item.get_value_to_return()
-        return input_string
-
-    def is_ready_to_return(self):
-        return self.ready_to_return
-
-    def get_value_to_return(self):
-        return self.value_to_return
-
-    def is_finished(self):
-        return self.finished
-
-class ProcessBranch(ProcessBranchBlock):
-    def __init__(self, rule_validator, add_notification = None):
-        ProcessBranchBlock.__init__(self, add_notification)
-        self.processor_block_type = self.BRANCH
-        self.rule_validator = rule_validator
-
-    def test(self, input_string):
-        return self.rule_validator is None or self.rule_validator.test(input_string)
-
-class TextProcessor(ProcessBranch):
-    def __init__(self, rule_validator, replacement, return_mode = True, add_notification = None):
-        ProcessBranch.__init__(self, rule_validator, add_notification)
-        self.replacement = replacement
-        self.return_mode = return_mode
-
-    def process(self, input_string):
-        if self.rule_validator is None:
-            return None
-        replaced = self.rule_validator.replace(input_string, self.replacement)
-        if replaced != input_string:
-            self.value_to_return = replaced
-            self.ready_to_return = True
-
-class RuleValidator:
-    CMD_COMPARE_EQ = 1
-    CMD_COMPARE_NOTEQ = 2
-    def __init__(self, compare_command, comparation_set):
-        self.comparation_set = comparation_set
-        self.compare_command = compare_command
-
-    def _get_compare_command(self):
-        return self.compare_command
-
-    def test(self, input_string):
-        compare_command = self._get_compare_command()
-        for comparation_item in self.comparation_set:
-            if comparation_item.match(input_string):
-                return compare_command == self.CMD_COMPARE_EQ
-        return compare_command == self.CMD_COMPARE_NOTEQ
-
-    def replace(self, input_string, replacement):
-        if replacement is None:
-            replacement = ""
-        for comparation_item in self.comparation_set:
-            if comparation_item.match(input_string):
-                return re.sub(comparation_item,  "\\1%s\\2" % replacement, input_string)
-        return None
