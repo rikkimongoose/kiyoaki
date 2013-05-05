@@ -13,7 +13,7 @@ class Lexer:
             if source_loader.is_end():
                 return None
             new_line = self.source_loader.get_line()
-            is_line_empty = not new_line || self.parser_context.is_comment(new_line)
+            is_line_empty = not new_line or self.parser_context.is_comment(new_line)
         return new_line
 
     def get_lexems(self, source_loader):
@@ -23,7 +23,7 @@ class Lexer:
         lexems = []
         line_to_parse = self._get_line()
         while line_to_parse is not None:
-            while !self.parser_context.is_finished(line_to_parse):
+            while not self.parser_context.is_finished(line_to_parse):
                 new_line_to_parse = self._get_line()
                 if new_line_to_parse is None:
                     self.parser_context.add_notification("Lexer Error", "Unable to parse final line: %s" % line_to_parse)

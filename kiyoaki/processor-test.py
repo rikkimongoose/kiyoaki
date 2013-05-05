@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*- 
 
 import unittest
-from processor import *
 import re
+
+from processor import *
 
 validator = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"(.*)ь()")])
 validatorL = RuleValidator(RuleValidator.CMD_COMPARE_EQ, [re.compile(r"()Л(.*)")])
