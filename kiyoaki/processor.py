@@ -84,6 +84,7 @@ class ProcessBranchBlock(BaseProcessor):
                         break
                     else:
                         input_string = sub_item.get_value_to_return()
+        return input_string
 
     def is_ready_to_return(self):
         return self.ready_to_return
