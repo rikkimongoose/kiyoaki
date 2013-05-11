@@ -115,7 +115,7 @@ class RuleValidator:
     CMD_COMPARE_EQ = 1
     CMD_COMPARE_NOTEQ = 2
     def __init__(self, compare_command, comparation_set):
-        self.comparation_set = comparation_set
+        self.comparation_set = None
         self.compare_command = compare_command
 
     def _get_compare_command(self):
@@ -135,3 +135,14 @@ class RuleValidator:
             if comparation_item.match(input_string):
                 return re.sub(comparation_item,  "\\1%s\\2" % replacement, input_string)
         return None
+
+    def load_comparation_set(self, comparation_set):
+        self.comparation_set = []
+        for comparation_item in comparation_set:
+            new_comparation_item = comparation_item.replace("-", "(.*)")
+            if comparation_item[0] != "-":
+                new_comparation_item = "()"+new_comparation_item
+            if comparation_item[-1] != "-":
+                new_comparation_item = new_comparation_item + "()"
+            self.comparation_set.append(re.compile(new_comparation_item))
+        return self
