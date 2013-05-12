@@ -8,6 +8,10 @@ class KBaseBlock:
     def __init__(self):
         self.sub_items = []
         self.parent = None
+        self.rule = None
+
+    def is_default(self):
+        return self.rule is not None and self.rule.is_default()
 
     def append(self, sub_item):
         if sub_item is not None:
@@ -52,48 +56,56 @@ class KCodeBlock(KBaseBlock):
         self.rule = rule
         return self
 
-    def CreateBlock(self, rule, return_mode = False, random_key = True):
+    def _CreateBlock(self, rule, return_mode = False, random_key = True):
         new_block = KCodeBlock(rule, return_mode, random_key)
         self.append(new_block)
         return new_block
 
-    def CreateCommand(self, rule, return_mode = True, random_key = 0):
+    def _CreateCommand(self, rule, return_mode = True, random_key = 0):
         new_block = KCommand(rule, return_mode, random_key)
         self.append(new_block)
-        return new_block
+        return self
 
     def Block(self, rule = None, return_mode = True, random_key = 0):
-        return self.CreateBlock(rule, return_mode, random_key)
+        return self._CreateBlock(rule, return_mode, random_key)
 
     def Branch(self, rule = None, random_key = 0):
-        return self.CreateBlock(rule, True, random_key)
+        return self._CreateBlock(rule, True, random_key)
 
     def Converter(self, rule):
-        return self.CreateCommand(rule, False, 0)
+        return self._CreateCommand(rule, False, 0)
 
     def Returner(self, rule):
-        return self.CreateCommand(rule, True, 0)
+        return self._CreateCommand(rule, True, 0)
 
     def End(self):
         return new_block.get_parent()
 
     def process(self, input_string):
         blocks_to_exec = []
+        do_default = True
+        default_item = None
+        base_string = input_string
         for sub_item in self.sub_items:
             if sub_item.can_be_used_for(input_string):
+                if sub_item.is_default():
+                    default_item = sub_item
                 if sub_item.is_random_select():
                     blocks_to_exec.append(sub_item)
                     continue
                 input_string = sub_item.process(input_string)
                 if sub_item.is_return_mode():
                     return input_string
+                do_default = base_string == input_string
+        print do_default and default_item is not None
+        if do_default and default_item is not None:
+            input_string = default_item.process(input_string)
 
         if len(blocks_to_exec):
             sub_item = choice(blocks_to_exec)
             input_string = sub_item.process(input_string)
 
         return input_string
-
 
 class KCommand(KCodeBlock):
     def __init__(self, rule = None, return_mode = True, random_key = 0):
@@ -122,14 +134,19 @@ class RuleValidator:
         if comparation_set is not None:
             self.load_set(comparation_set)
         self.replacement = replacement
+        self.default = False
 
     def test(self, input_string):
+        if self.is_default():
+            return True
         for comparation_item in self.comparation_set:
             if comparation_item.match(input_string):
                 return True
         return False
 
     def replace(self, input_string):
+        if self.is_default():
+            return input_string + self.replacement
         for comparation_item in self.comparation_set:
             if comparation_item.match(input_string):
                 return re.sub(comparation_item,  "\\1%s\\2" % self.replacement, input_string)
@@ -137,16 +154,23 @@ class RuleValidator:
 
     def load_set(self, comparation_set):
         for comparation_item in comparation_set:
+            if not len(comparation_item):
+                self.default = True
+                continue
             self.comparation_set.append(re.compile(self.parse_comparation_item(comparation_item)))
         return self
 
     def parse_comparation_item(self, comparation_item):
         new_comparation_item = comparation_item.replace("-", "(.*)")
         if comparation_item[0] != "-":
-            new_comparation_item = "()"+new_comparation_item
+            new_comparation_item = "^()"+new_comparation_item
         if comparation_item[-1] != "-":
-            new_comparation_item = new_comparation_item + "()"
+            new_comparation_item = new_comparation_item + "()$"
         return new_comparation_item
+
+    def is_default(self):
+        return self.default
+
 
 
 if __name__ == "__main__":
