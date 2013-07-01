@@ -15,11 +15,11 @@ class MainPage(webapp.RequestHandler):
           <html>
             <body>
               <h1>Kiyaki %s</h1>
-              The natural languages generation toolkit.<br /><br />
+              The natural languages generation toolkit. The source is availible <a href="http://github.com/rikkimongoose/kiyoaki">at GitHub</a>.<br /><br />
               <p>Generated surname is:</p>
               <pre>%s</pre>
               <hr />
-              <p>The software is licensed with LGPL license.</p>
+              <p>The software is licensed with LGPL license. &copy; <a href="http://rikkimongoose.ru/">Rikki Mongoose</a>, 2013.</p>
             </body>
           </html>""" % (KiyoakiCore.get_ver(), KiyoakiCore.generate()))
 

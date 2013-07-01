@@ -6,33 +6,10 @@ IS_UTF8 = 1
 ITERATOR = 1 << IS_UTF8
 
 import random
-
-class MorphemNode:
-    """ A node with text of morphem and count if its usage in source array.
-    """
-    def __init__(self, text=None, can_be_single = False):
-        self.text = text
-        self.can_be_single = can_be_single
-        self.count = 1
-
-    def get_text(self):
-        return self.text
-
-    def inc(self):
-        self.count += 1
-        return self
-
-    def get_count(self):
-        return self.count
-
-    def is_single(self):
-        return self.can_be_single
-
-    def __str__(self):
-        return "%s (%s:%s)" % (self.get_text(), self.get_count(), self.is_single())
+from morphnode import *
 
 class MorphemGenerator:
-    """ MorphemGenerator generates a fake surname based on the array of existing ones.
+    """ Generates a fake surname based on the array of existing ones.
 
         Usage:
             generator = MorphemGenerator(array_with_surnames)
@@ -147,6 +124,7 @@ class MorphemGenerator:
         text_line = "%s%s" % (node_head_text, node_tail_text)
 
         return text_line.title()
+
     def generate(self):
         """ Generate a surname based on the array of template surnames.
         """

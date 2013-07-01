@@ -2,10 +2,15 @@
 # -*- coding: utf-8 -*- 
 
 from morphgen import *
+from namegen import *
+from secondnamegen import *
+
 from bases.surnames import *
+from bases.names import *
+from bases.secondnames import *
 
 class KiyoakiCore:
-    VERSION = "0.1"
+    VERSION = "0.1.1"
     """ Core class for Kiyoaki project. Generates Russian names with surnames.
     """
     @staticmethod
@@ -17,12 +22,20 @@ class KiyoakiCore:
         return generator.generate()
 
     @staticmethod
-    def generate_name():
-        return ""
+    def generate_name(names_array = None):
+        if names_array is None:
+            names_array = DEFAULT_NAMES
+
+        generator = NameGenerator(names_array)
+        return generator.generate()
 
     @staticmethod
-    def generate_secondname():
-        return ""
+    def generate_secondname(secondnames_array = None):
+        if secondnames_array is None:
+            secondnames_array = DEFAULT_SECONDNAMES
+
+        generator = SecondNameGenerator(secondnames_array)
+        return generator.generate()
 
     @staticmethod
     def get_ver():
