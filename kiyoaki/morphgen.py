@@ -117,8 +117,7 @@ class MorphemGenerator:
         if self.fixes_array is None or not self.do_fix:
             return word
         for fix_item in self.fixes_array:
-            print fix_item[1]
-            word = re.sub(fix_item[0], fix_item[1], word)
+            word = word.decode("utf-8").replace(fix_item[0], fix_item[1]).encode("utf-8")
         return word
         
     def _do_generate(self):

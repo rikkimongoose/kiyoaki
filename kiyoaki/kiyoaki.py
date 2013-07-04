@@ -10,9 +10,9 @@ from bases.names import *
 from bases.secondnames import *
 
 class KiyoakiCore:
-    VERSION = "0.1.1"
     """ Core class for Kiyoaki project. Generates Russian names with surnames.
     """
+    VERSION = "0.2"
     @staticmethod
     def generate_surname(surnames_array = None, surnames_fixes = None):
         if surnames_array is None:
