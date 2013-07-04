@@ -6,6 +6,7 @@ IS_UTF8 = 1
 ITERATOR = 1 << IS_UTF8
 
 import random
+import re
 from morphnode import *
 
 class MorphemGenerator:
@@ -17,9 +18,11 @@ class MorphemGenerator:
     """
     DEFAULT_START_INDEX = 3
 
-    def __init__(self, source_array, start_index = DEFAULT_START_INDEX):
+    def __init__(self, source_array, fixes_array = None, start_index = DEFAULT_START_INDEX):
         self.start_index = start_index * ITERATOR
         self.source_array = source_array
+        self.fixes_array = fixes_array
+        self.do_fix = fixes_array is not None
 
         self.sources = []
         self.prefixes = []
@@ -110,6 +113,14 @@ class MorphemGenerator:
         self.postfixes = filter(lambda_filter_applied, self.postfixes)
         return self
 
+    def fix_mixes(self, word):
+        if self.fixes_array is None or not self.do_fix:
+            return word
+        for fix_item in self.fixes_array:
+            print fix_item[1]
+            word = re.sub(fix_item[0], fix_item[1], word)
+        return word
+        
     def _do_generate(self):
         node_head = MorphemGenerator.get_markov_node(self.prefixes)
         if node_head.is_single() and random.randint(0, 1):
@@ -128,7 +139,7 @@ class MorphemGenerator:
     def generate(self):
         """ Generate a surname based on the array of template surnames.
         """
-        return self._load_source()._compile()._clear()._do_generate()
+        return self.fix_mixes(self._load_source()._compile()._clear()._do_generate())
 
     @staticmethod
     def get_markov_node(nodes_array):

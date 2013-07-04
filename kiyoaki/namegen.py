@@ -17,7 +17,7 @@ class NameGenerator:
     def generate(self):
         """ Generate a name based on the array of template surnames.
         """
-        name_index = random.randint(1, len(self.source_array))
+        name_index = random.randint(0, len(self.source_array) - 1)
         return self.source_array[name_index]
 
 if __name__ == "__main__":

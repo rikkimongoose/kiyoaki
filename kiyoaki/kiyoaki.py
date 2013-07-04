@@ -14,11 +14,13 @@ class KiyoakiCore:
     """ Core class for Kiyoaki project. Generates Russian names with surnames.
     """
     @staticmethod
-    def generate_surname(surnames_array = None):
+    def generate_surname(surnames_array = None, surnames_fixes = None):
         if surnames_array is None:
             surnames_array = DEFAULT_SURNAMES
-
-        generator = MorphemGenerator(surnames_array)
+        if surnames_fixes is None:
+            surnames_fixes = DEFAULT_SURNAMES_FIXES
+        
+        generator = MorphemGenerator(surnames_array, surnames_fixes)
         return generator.generate()
 
     @staticmethod

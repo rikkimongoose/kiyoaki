@@ -559,8 +559,12 @@ DEFAULT_SURNAMES = [
     "Юхимук",
     "Якобсон",
     "Яковчик",
-    "Янович"]
+    "Янович"
+]
 
+DEFAULT_SURNAMES_FIXES = [
+    (r"a", "ыыыы")
+]
 
 if __name__ == "__main__":
     print "Surnames base file for Kiyoaki generator. The default surnames are:\n\n"
