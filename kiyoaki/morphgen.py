@@ -150,10 +150,9 @@ class MorphemGenerator:
 
         rand_sum_elem = random.randint(1, markov_sum)
 
-        markov_sum = 0
         for node in nodes_array:
-            markov_sum += node.get_count()
-            if markov_sum >= rand_sum_elem:
+            markov_sum -= node.get_count()
+            if markov_sum < rand_sum_elem:
                 return node
         return None
 
